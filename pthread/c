@@ -1,0 +1,4 @@
+#!/bin/bash
+gcc $1.c -lpthread
+./a.out
+rm a.out
