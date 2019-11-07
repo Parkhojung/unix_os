@@ -59,10 +59,6 @@ void* t_function(void *data){
 	
 	char * pid = (char *)data; // save parameter
 	int int_pid = atoi(pid);
-	int fork1, fork2;
-	struct timespec timeout;
-	timeout.tv_sec = num_of_ms/1000;
-	timeout.tv_nsec =0;
 	int lock_res;
 
 	//print id
@@ -75,32 +71,14 @@ void* t_function(void *data){
 	while(1)
 	{
 		
-		//int fork1 = fork_mut_arr[int_pid].__pthread_mutex_s.__lock;
-		//int fork2 = fork_mut_arr[(int_pid+1)%num_of_phil].__pthread_mutex_s.__lock;
-		//printf("[%d, t:%d] check: %d, %d \n",int_pid, log_timing, fork1, fork2);
-
-		//printf("while start in pid : %d\n",int_pid);
-		// get semaphore(two fork)
-	/*	
-		if(fork_mut_arr[int_pid].__data.__count==0 || 
-			fork_mut_arr[(int_pid+1)%num_of_phil].__data.__count==0){
-			usleep((int)num_of_us);
-		}
-	*/
 		// check using forkset
 		sem_wait(&mysem);
 		pthread_mutex_lock(&pickup_mut);
-		printf("[%d, t:%d] pick up try\n",int_pid,log_timing);
+	//	printf("[%d, t:%d] pick up try\n",int_pid,log_timing);
 		pthread_mutex_lock(&fork_mut_arr[int_pid]);
 		pthread_mutex_lock(&fork_mut_arr[next_int_pid]);
-		printf("[%d, t:%d] pick up sucess\n",int_pid,log_timing);	
+	//	printf("[%d, t:%d] pick up sucess\n",int_pid,log_timing);	
 		pthread_mutex_unlock(&pickup_mut);		
-
-		//sem_wait(&mysem[int_pid]);
-		//sem_wait(&mysem[(int_pid+1)%num_of_phil]);	
-		// eating
-		
-		printf("[%d, t:%d] eat\n",int_pid,log_timing);
 		
 		// write log
 		pthread_mutex_lock(&write_mut);	
@@ -109,14 +87,11 @@ void* t_function(void *data){
 		pthread_mutex_unlock(&write_mut);
 		
 		// eating
+	//	printf("[%d, t:%d] eat\n",int_pid,log_timing);
 		usleep(num_of_us);
 		
-		
 		// release semaphore(two fork)
-		//sem_post(&mysem[int_pid]);
-		//sem_post(&mysem[(int_pid+1)%num_of_phil]);
-		
-		printf("[%d, t:%d] release\n",int_pid, log_timing);
+	//	printf("[%d, t:%d] release\n",int_pid, log_timing);
 		pthread_mutex_unlock(&fork_mut_arr[int_pid]);
 		pthread_mutex_unlock(&fork_mut_arr[(int_pid+1)%num_of_phil]);
 		sem_post(&mysem);		
@@ -124,8 +99,6 @@ void* t_function(void *data){
 		//thinking
 		usleep(num_of_us);
 
-		//printf("while end in pid: %d", int_pid);
-		
 	}
 }
 
@@ -231,6 +204,7 @@ int main(int arg_cnt, char ** arg_arr){
 		printf("\n");
 	}
 	
+	// check function	
 	check();	
 
 	return 0;
