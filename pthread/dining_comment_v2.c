@@ -3,22 +3,26 @@
 #include <semaphore.h>
 #include <stdlib.h>
 #include <sys/timeb.h>
+#include <time.h>
 
 #define TRUE  1
 #define FALSE 0
 #define P_CNT 4 
 #define LOG_TIMING_MAX 100
 #define LOG_ORDER_MAX 5
-
-pthread_mutex_t mymut;
-pthread_cond_t mycond;
+#define PHIL_NUM_MAX 10
+//variable
+pthread_mutex_t write_mut;
+pthread_mutex_t pickup_mut;
+pthread_mutex_t fork_mut_arr[PHIL_NUM_MAX];
 sem_t mysem;
+//sem_t mysem[PHIL_NUM_MAX];
 int count;
-int num_of_phil;
+int num_of_phil, num_of_fork_set;
 int num_of_ms, num_of_us;
 int num_of_cycle;
-
-char log[LOG_TIMING_MAX][LOG_ORDER_MAX];
+// log variable
+char log_arr[LOG_TIMING_MAX][LOG_ORDER_MAX];
 int log_index;
 int log_timing;
 
@@ -28,36 +32,99 @@ void err(char * err_msg){
 	exit(1);
 }
 
+// check function
+void check(){
+	int diff;
+	for(int i = 0; i <num_of_cycle; i++){
+		for(int j = 0; j< num_of_fork_set-1; j++){
+			if(log_arr[i][j] == '\0')
+				continue;
+			for(int k =j+1; k< num_of_fork_set; k++){
+				if(log_arr[i][k] == '\0')
+					continue;
+				diff = log_arr[i][j] - log_arr[i][k];
+				if(diff == 1 || diff ==-1){
+					printf("error in [%d][%d]:%c, [%d][%d]:%c, diff: %d \n"
+						,i,j,log_arr[i][j],i,k,log_arr[i][k], diff );
+					exit(1);
+				}
+			}
+		}
+	}
+	printf("error doesn't occur\n");
+}
+
 // thread function
 void* t_function(void *data){
 	
 	char * pid = (char *)data; // save parameter
-	
+	int int_pid = atoi(pid);
+	int fork1, fork2;
+	struct timespec timeout;
+	timeout.tv_sec = num_of_ms/1000;
+	timeout.tv_nsec =0;
+	int lock_res;
+
 	//print id
 	pthread_t id; 
 	id = pthread_self(); 
-	printf("Thread %lu Created. \n", id);
+	printf("[%d, id:%lu] Created.\n", int_pid,id);
 	
+	int next_int_pid = (int_pid+1)%num_of_phil;
 	// loop eating and thinking
 	while(1)
 	{
 		
-		// get semaphore(two fork)	
-		sem_wait(&mysem);	
+		//int fork1 = fork_mut_arr[int_pid].__pthread_mutex_s.__lock;
+		//int fork2 = fork_mut_arr[(int_pid+1)%num_of_phil].__pthread_mutex_s.__lock;
+		//printf("[%d, t:%d] check: %d, %d \n",int_pid, log_timing, fork1, fork2);
+
+		//printf("while start in pid : %d\n",int_pid);
+		// get semaphore(two fork)
+	/*	
+		if(fork_mut_arr[int_pid].__data.__count==0 || 
+			fork_mut_arr[(int_pid+1)%num_of_phil].__data.__count==0){
+			usleep((int)num_of_us);
+		}
+	*/
+		// check using forkset
+		sem_wait(&mysem);
+		pthread_mutex_lock(&pickup_mut);
+		printf("[%d, t:%d] pick up try\n",int_pid,log_timing);
+		pthread_mutex_lock(&fork_mut_arr[int_pid]);
+		pthread_mutex_lock(&fork_mut_arr[next_int_pid]);
+		printf("[%d, t:%d] pick up sucess\n",int_pid,log_timing);	
+		pthread_mutex_unlock(&pickup_mut);		
+
+		//sem_wait(&mysem[int_pid]);
+		//sem_wait(&mysem[(int_pid+1)%num_of_phil]);	
+		// eating
+		
+		printf("[%d, t:%d] eat\n",int_pid,log_timing);
+		
+		// write log
+		pthread_mutex_lock(&write_mut);	
+		log_arr[log_timing][log_index] = pid[0];
+		log_index++; 
+		pthread_mutex_unlock(&write_mut);
+		
 		// eating
 		usleep(num_of_us);
 		
-		// write log
-		pthread_mutex_lock(&mymut);	
-		log[log_timing][log_index] = pid[7];
-		log_index++; 
-		pthread_mutex_unlock(&mymut);
 		
 		// release semaphore(two fork)
-		sem_post(&mysem);
+		//sem_post(&mysem[int_pid]);
+		//sem_post(&mysem[(int_pid+1)%num_of_phil]);
+		
+		printf("[%d, t:%d] release\n",int_pid, log_timing);
+		pthread_mutex_unlock(&fork_mut_arr[int_pid]);
+		pthread_mutex_unlock(&fork_mut_arr[(int_pid+1)%num_of_phil]);
+		sem_post(&mysem);		
 		
 		//thinking
 		usleep(num_of_us);
+
+		//printf("while end in pid: %d", int_pid);
 		
 	}
 }
@@ -65,14 +132,15 @@ void* t_function(void *data){
 int main(int arg_cnt, char ** arg_arr){
 
 	pthread_t p_thread[P_CNT];
-	char *p[] = {"thread_1", "thread_2","thread_3","thread_4","thread_5"
-	 	     ,"thread_6", "thread_7", "thread_8","thread_9", "thread_0"};
+	char *pid_list[] = {"0","1", "2","3","4","5","6", "7", "8","9"};
+	
 	int thr_id;
 	int status;
 	int i = 0;
 	
 	// number of philoscophers
 	num_of_phil = atoi(arg_arr[1]);
+	num_of_fork_set =(int)num_of_phil/2;
 	if( (3 <= num_of_phil && num_of_phil <=10)== FALSE)
 		err("num_of_phil is invalid");
 	
@@ -88,35 +156,47 @@ int main(int arg_cnt, char ** arg_arr){
                 err("num_of_cycle is invalid");
         
 	// initialize mutex variable
-	if(pthread_mutex_init(&mymut, NULL) !=0){	
+	if(pthread_mutex_init(&write_mut, NULL) !=0){	
 		perror("mutex initialize error: ");
 		exit(1);
 	}
 	
-	// initialize semaphore variable
-	// value is (int)(# philosopher /2) for prevention
-	if(sem_init(&mysem, 0, (int)num_of_phil/2) == -1){
-		perror("semaphore initialize error:");
+	if(pthread_mutex_init(&pickup_mut,NULL)!=0){
+		perror("mutex initialize error: ");
 		exit(1);
 	}
 	
-	// lock mutex until thread_create is completed
-	pthread_mutex_lock(&mymut);
 	
-	// thread create
-	for( i = 0; i< P_CNT; i++)
-	{		
-		thr_id= pthread_create(&p_thread[i],NULL, t_function, (void *)p[i]);
-		
-		// error check
-		if(thr_id != 0)
-		{
-			perror("thread create error : ");
+	sem_init(&mysem,0, num_of_fork_set);
+	
+	for(i = 0 ; i< num_of_phil; i++){
+		//if(sem_init(&mysem[i], 0, 1) == -1){
+		if(pthread_mutex_init(&fork_mut_arr[i],NULL)!=0){
+			perror("semaphore initialize error:");
 			exit(1);
 		}	
 	}
+	
+	// lock mutex until thread_create is completed
+	pthread_mutex_lock(&pickup_mut);
+	
+	// thread create 0,2,4,... 1,3,5,...
+	
+	for (int start_num= 0; start_num <= 1; start_num++){	
+		for( i = start_num; i< num_of_phil; i=i+2)
+		{		
+			thr_id= pthread_create(&p_thread[i],NULL, t_function, (void *)pid_list[i]);
+			// error check
+			if(thr_id != 0)
+			{
+				perror("thread create error : ");
+				exit(1);
+			}	
+		}
+	}
+
 	// unlock mutex
-	pthread_mutex_unlock(&mymut);
+	pthread_mutex_unlock(&pickup_mut);
 	
 	// time calculate
 	struct timeb start, end;
@@ -124,7 +204,9 @@ int main(int arg_cnt, char ** arg_arr){
 	
 	// sleep each cycle 
 	for(log_timing= 0; log_timing < num_of_cycle; log_timing++){
+		pthread_mutex_lock(&write_mut);
 		log_index =0;
+		pthread_mutex_unlock(&write_mut);
 		usleep(num_of_us);
 	}
 	
@@ -137,15 +219,23 @@ int main(int arg_cnt, char ** arg_arr){
 	int elapsed_time = (end.millitm-start.millitm)+(int)(1000.0*(end.time-start.time));
 	printf("elapsed time : %d\n", elapsed_time);
 
-	// print log 
-	for(i = 0 ; i< LOG_TIMING_MAX; i++){	
-		for(int j = 0; j <LOG_ORDER_MAX; j++){
-			if(log[i][j] != '\0')
-				printf("log[%d][%d]: %c\n",i,j,log[i][j]);	
+	// print log [7, t:1] eat
+	for(i = 0 ; i< num_of_cycle; i++){
+		printf("log[%d]: ",i);	
+		for(int j = 0; j <num_of_fork_set; j++){
+			if(log_arr[i][j] != '\0')
+				printf("%c/ ",log_arr[i][j]);	
+			else 
+				printf("x/ ");
 		}
+		printf("\n");
 	}
 	
+	check();	
+
 	return 0;
 }
+
+
 
 

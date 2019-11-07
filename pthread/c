@@ -1,4 +1,4 @@
 #!/bin/bash
-gcc $1.c -lpthread
-./a.out
+gcc $1 -lpthread
+./a.out $2 $3 $4
 
