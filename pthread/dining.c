@@ -38,27 +38,21 @@ void* t_function(void *data){
 	{
 		
 		sem_wait(&mysem);	
-		pthread_mutex_lock(&mymut);
-//		pthread_cond_wait(&mycond, &mymut);
-
-//		tmp = count;
-//		tmp = tmp +1;
+		// eating start
 		usleep(num_of_us);
+		
+		// write log
+		pthread_mutex_lock(&mymut);	
 		log[log_order] = pid[7];
 		log_order ++; 
-//		count = tmp;
-//		printf("[id:%s] : %d\n",pid, count);
-		
-//		pthread_cond_signal(&mycond);
 		pthread_mutex_unlock(&mymut);
+		
+		// eating end
 		sem_post(&mysem);
 		
-		
+		//thinking
 		usleep(num_of_us);
 		
-		//if(state == END)
-		//	pthread_exit((void *)pid);
-	
 	}
 }
 
