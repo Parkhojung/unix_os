@@ -7,7 +7,6 @@
 
 #define TRUE  1
 #define FALSE 0
-#define P_CNT 4 
 #define LOG_TIMING_MAX 100
 #define LOG_ORDER_MAX 5
 #define PHIL_NUM_MAX 10
@@ -30,7 +29,7 @@ int fun_res;
 
 // error fuction
 void err(char * err_msg){
-	printf("err_msg: %s", err_msg);
+	printf("err_msg: %s\n\n", err_msg);
 	exit(1);
 }
 
@@ -128,7 +127,7 @@ int main(int arg_cnt, char ** arg_arr){
 	
 	// number of cycle 
 	num_of_cycle = atoi(arg_arr[3]);
-	if( (1 <= num_of_phil && num_of_phil <=100) ==FALSE)
+    if( (1 <= num_of_cycle && num_of_cycle <=100) ==FALSE)
                 err("num_of_cycle is invalid");
         
 	// initialize mutex variable
