@@ -26,9 +26,11 @@ char log_arr[LOG_TIMING_MAX][LOG_ORDER_MAX];
 int log_index;
 int log_timing;
 
+int fun_res;
+
 // error fuction
 void err(char * err_msg){
-	printf("%s", err_msg);
+	printf("err_msg: %s", err_msg);
 	exit(1);
 }
 
@@ -104,6 +106,7 @@ void* t_function(void *data){
 
 int main(int arg_cnt, char ** arg_arr){
 
+    fun_res = -1;
 	pthread_t p_thread[P_CNT];
 	char *pid_list[] = {"0","1", "2","3","4","5","6", "7", "8","9"};
 	
@@ -130,46 +133,41 @@ int main(int arg_cnt, char ** arg_arr){
         
 	// initialize mutex variable
 	if(pthread_mutex_init(&write_mut, NULL) !=0){	
-		perror("mutex initialize error: ");
-		exit(1);
+		err("mutex initialize error: ");
 	}
 	
 	if(pthread_mutex_init(&pickup_mut,NULL)!=0){
-		perror("mutex initialize error: ");
-		exit(1);
+		err("mutex initialize error: ");
 	}
 	
 	
-	sem_init(&mysem,0, num_of_fork_set);
+	if(sem_init(&mysem,0, num_of_fork_set)!=0){
+           err("sem_init");
+    }
 	
 	for(i = 0 ; i< num_of_phil; i++){
-		//if(sem_init(&mysem[i], 0, 1) == -1){
 		if(pthread_mutex_init(&fork_mut_arr[i],NULL)!=0){
-			perror("semaphore initialize error:");
-			exit(1);
+			err("semaphore initialize error:");	
 		}	
 	}
 	
 	// lock mutex until thread_create is completed
-	pthread_mutex_lock(&pickup_mut);
+	if(pthread_mutex_lock(&pickup_mut)!=0)
+        err("mutex lock");
 	
 	// thread create 0,2,4,... 1,3,5,...
 	
 	for (int start_num= 0; start_num <= 1; start_num++){	
 		for( i = start_num; i< num_of_phil; i=i+2)
 		{		
-			thr_id= pthread_create(&p_thread[i],NULL, t_function, (void *)pid_list[i]);
-			// error check
-			if(thr_id != 0)
-			{
-				perror("thread create error : ");
-				exit(1);
-			}	
+			if(pthread_create(&p_thread[i],NULL, t_function, (void *)pid_list[i])!=0)
+                err("pthread_create");
 		}
 	}
 
 	// unlock mutex
-	pthread_mutex_unlock(&pickup_mut);
+	if(pthread_mutex_unlock(&pickup_mut)!=0)
+        err("pthread_mutex_unlock");
 	
 	// time calculate
 	struct timeb start, end;
@@ -179,15 +177,17 @@ int main(int arg_cnt, char ** arg_arr){
 	for(log_timing= 0; log_timing < num_of_cycle; log_timing++){
 		pthread_mutex_lock(&write_mut);
 		log_index =0;
-		pthread_mutex_unlock(&write_mut);
+		if(pthread_mutex_unlock(&write_mut)!=0)
+            err("pthread_mutex_unlock");
 		usleep(num_of_us);
 	}
 	
 
 	ftime(&end);
-	for( i = 0 ; i<P_CNT; i++)
-		pthread_cancel(p_thread[i]);
-	
+	for( i = 0 ; i<P_CNT; i++){
+		if(pthread_cancel(p_thread[i])!=0)
+            err("pthread_cancel");
+	}
 	// elapsed time
 	int elapsed_time = (end.millitm-start.millitm)+(int)(1000.0*(end.time-start.time));
 	printf("elapsed time : %d\n\n", elapsed_time);
