@@ -3,8 +3,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define BUF_SIZE 200
+#define DEBUG_FLAG 0
 char buf[BUF_SIZE];
 
 
@@ -12,7 +14,8 @@ void prn(char *str){
 	printf("\n//%s\n", str);
 }
 void print_buf(){
-	printf("%s",buf);
+	if(DEBUG_FLAG)
+		printf("%s",buf);
 }
 int get_line(char * filename, char* str){
 
@@ -44,7 +47,7 @@ int get_line_2(char * filename, int line){
 			break;
 	}
 	
-	if (line == -1){
+	if (line == -1 && DEBUG_FLAG){
 		printf("last line in %s :", filename);	
 	} 
 	print_buf();
@@ -77,10 +80,11 @@ char* get_strtok(char * delim, int order){
 			break;	
     		token = strtok (NULL, delim);
   	}
+	/*
 	printf("[in get_strtok]\n");
 	printf("tok : %s\n", token);
 	printf("buf : %s\n", buf); 
-
+	*/
 	return token;
 }	
 
@@ -91,6 +95,8 @@ int main(){
 	int memTotal, memFree;
 	int uptime;
 	int processor_cnt, sibling;
+	time_t t;
+	struct tm tm;
 
 	prn("meminfo");
 	get_line("/proc/meminfo", "MemTotal");
@@ -103,20 +109,33 @@ int main(){
 
 	prn("kernel version");
 	get_line("/proc/version","Linux version");
+	printf("%s\n",get_strtok(" ", 3));
 
 	prn("cpu info");
 	get_line("/proc/cpuinfo", "sibling");
 	sibling = atoi(get_strtok(":",2));
 	get_line("/proc/cpuinfo", "cpu cores");		
-	get_line("/proc/cpuinfo", "model name");
+	get_line("/proc/cpuinfo", "cpu MHz");
 	processor_cnt = get_line_3("/proc/cpuinfo","processor");
-	printf("logical processor count : %d\n", processor_cnt);
-	printf("physical processor count : %d\n", processor_cnt/sibling);
+	printf("**logical processor count : %d\n", processor_cnt);
+	printf("**physical processor count : %d\n", processor_cnt/sibling);
 
 	prn("up time");	
 	get_line_2("/proc/uptime",1);
-//	uptime=(int)atof(get_strtok(" ", 1));
-	printf("uptime: %d", uptime);	
+	uptime=(int)atof(get_strtok(" ", 1));
+	if(DEBUG_FLAG)
+		printf("uptime: %d\n", uptime);	
+	
+	t=time(NULL);
+	tm = *localtime(&t);
+	
+	if(DEBUG_FLAG)
+		printf("**now: %d-%d %d:%d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1,tm.tm_mday, tm.tm_hour    , tm.tm_min, tm.tm_sec);
+	
+	t -= uptime;
+	tm = *localtime(&t);
+	printf("**boot time: %d-%d %d:%d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1,tm.tm_mday, tm.tm_hour    , tm.tm_min, tm.tm_sec);
+	
 
 	prn("context switches");
 	get_line("/proc/stat","ctxt");	
