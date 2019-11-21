@@ -1,0 +1,50 @@
+invalid format in line 6, ignored
+[print_tasks]
+(id: id1       , action: 0, pipe-id:           , order= 1  )
+
+
+[print_tasks]
+(id: id1       , action: 0, pipe-id:           , order= 1  )
+(id: id2       , action: 0, pipe-id: id1       , order= 100)
+
+
+invalid action 'wait' in line 9, ignored
+[print_tasks]
+(id: id1       , action: 0, pipe-id:           , order= 1  )
+(id: respawn1  , action: 1, pipe-id:           , order= 50 )
+(id: id2       , action: 0, pipe-id: id1       , order= 100)
+
+
+invalid order '12345' in line 11, ignored
+[print_tasks]
+(id: id1       , action: 0, pipe-id:           , order= 1  )
+(id: respawn1  , action: 1, pipe-id:           , order= 50 )
+(id: id2       , action: 0, pipe-id: id1       , order= 100)
+(id: idonce2   , action: 0, pipe-id:           , order= 999)
+
+
+invalid format in line 15, ignored
+invalid id 'id_4' in line 18, ignored
+invalid id 'ID3' in line 19, ignored
+invalid action 'restart' in line 22, ignored
+invalid format in line 25, ignored
+duplicate id 'id2' in line 28, ignored
+invalid order 'id_3' in line 31, ignored
+invalid order 'id5' in line 34, ignored
+invalid action 'wait' in line 37, ignored
+invalid order 'id2' in line 38, ignored
+invalid order 'id1' in line 41, ignored
+invalid order 'id2' in line 42, ignored
+'Task6' start (timeout 2)
+'Task2' start (timeout 1)
+'Task4' start (timeout 4)
+'Task1' start (timeout 1)
+'Task2' receive 'Hi from Task1'
+'Task1' receive 'Hello from Task2'
+'Task2' end
+'Task1' end
+'Task6' end
+'Task4' end
+'Task4' start (timeout 4)
+'Task4' terminated by SIGNAL(2)
+'Task4' end

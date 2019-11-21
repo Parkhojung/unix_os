@@ -1,0 +1,111 @@
+
+---------------main start--------------------
+
+---------------multilevel queue init start--------------------
+
+---------------multilevel queue init end--------------------
+invalid process id 'p' in line 12, ignored
+invalid process id '_1' in line 13, ignored
+invalid arrive-time '-1' in line 19, ignored
+invalid arrive-time '31' in line 20, ignored
+invalid arrive-time '0' in line 23, ignored
+invalid arrive-time '0' in line 24, ignored
+invalid arrive-time '1' in line 27, ignored
+invalid arrive-time '1' in line 28, ignored
+invalid arrive-time '1' in line 29, ignored
+invalid process type 'HM' in line 32, ignored
+invalid arrive-time '1' in line 32, ignored
+
+---------------------------------------
+
+---------------------------------------
+<ID LIST>
+[0]: id - P1 , prt - 3 , type- H
+[1]: id - P2 , prt - 2 , type- L
+[2]: id - P3 , prt - 4 , type- M
+[3]: id - P4 , prt - 1 , type- H
+
+---------------------------------------
+
+---------------simulate start--------------------
+
+---------------assign_process_to_multi_level_queue start--------------------
+
+---------------add multi level queue fun start --------------------
+add_process->id: P1
+add_process: 261726416
+high_process_queue.head->next : 3091212064
+high_process_queue.tail : 3091212064
+FINISH****************************
+---------------prn_multilevel_queue start--------------------
+P1
+[id: P1]->
+[id: ]->
+[id: ]->
+
+---------------prn_multilevel_queue end--------------------
+
+---------------add multi level queue fun end--------------------
+
+---------------add multi level queue fun start --------------------
+add_process->id: P2
+add_process: 261726464
+FINISH****************************
+---------------prn_multilevel_queue start--------------------
+P1
+[id: P1]->
+[id: ]->
+[id: ]->
+
+---------------prn_multilevel_queue end--------------------
+
+---------------add multi level queue fun end--------------------
+
+---------------add multi level queue fun start --------------------
+add_process->id: P3
+add_process: 261726512
+FINISH****************************
+---------------prn_multilevel_queue start--------------------
+P1
+[id: P1]->
+[id: ]->
+[id: ]->
+
+---------------prn_multilevel_queue end--------------------
+
+---------------add multi level queue fun end--------------------
+
+---------------add multi level queue fun start --------------------
+add_process->id: P4
+add_process: 261726560
+high_process_queue.head->next : 261726416
+high_process_queue.tail : 3091212064
+add_process addr: 3760617648 , id: P4, priority: 1
+cur_process addr: 3760617584 , id: P1, priority: 3
+prev_process->next->id :P4add_process->next->id: P1FINISH****************************
+---------------prn_multilevel_queue start--------------------
+P4
+[id: P4]->[id: P1]->
+[id: ]->
+[id: ]->
+
+---------------prn_multilevel_queue end--------------------
+
+---------------add multi level queue fun end--------------------
+
+---------------assign_process_to_multi_level_queue end--------------------
+
+---------------prn_multilevel_queue start--------------------
+P4
+[id: P4]->[id: P1]->
+[id: ]->
+[id: ]->
+
+---------------prn_multilevel_queue end--------------------
+
+---------------simulate end--------------------
+
+---------------main end--------------------
+[P1] -> [P2] -> [P3] -> [P4] -> CPU TIME: 0
+AVERAGE TURNAROUND TIME: 0.00
+AVERAGE WAITING TIME: 0.00

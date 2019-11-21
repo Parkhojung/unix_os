@@ -1,0 +1,78 @@
+
+-----------[READ CONFIG]--------------
+invalid process id 'p' in line 12, ignored
+invalid process id '_1' in line 13, ignored
+duplicate process id 'P3' in line 16, ignored
+invalid process id '3P' in line 17, ignored
+invalid process type 'K' in line 20, ignored
+invalid process type '1' in line 21, ignored
+invalid process type 'HM' in line 22, ignored
+invalid arrive-time '-1' in line 25, ignored
+invalid arrive-time '31' in line 26, ignored
+invalid service-time '0' in line 29, ignored
+invalid service-time '60' in line 30, ignored
+invalid priority '0' in line 33, ignored
+invalid priority '11' in line 34, ignored
+invalid priority '-1' in line 35, ignored
+
+-----------[PROCESS ARRAY]--------------
+P1 H 0 8 3
+P2 L 1 4 2
+P3 M 2 9 4
+P4 H 3 5 1
+
+-----------------------------------
+
+-----------ASSIGN TO QUEUE--------------
+cpu time : 0
+[P1]'s arrive_time : 0
+H queue ) [P1]
+M queue ) 
+L queue ) 
+
+-----------------------------------
+
+-----------ASSIGN TO QUEUE--------------
+cpu time : 1
+[P2]'s arrive_time : 1
+H queue ) [P1]
+M queue ) 
+L queue ) [P2]
+
+-----------------------------------
+
+-----------ASSIGN TO QUEUE--------------
+cpu time : 2
+[P3]'s arrive_time : 2
+H queue ) [P1]
+M queue ) [P3]
+L queue ) [P2]
+
+-----------------------------------
+
+-----------ASSIGN TO QUEUE--------------
+cpu time : 3
+[P4]'s arrive_time : 3
+H queue ) [P4]-> [P1]
+M queue ) [P3]
+L queue ) [P2]
+
+-----------------------------------
+
+-----------[PROCESS ARRAY]--------------
+P1 H 0 8 3
+P2 L 1 4 2
+P3 M 2 9 4
+P4 H 3 5 1
+
+
+-----------[RESULT]--------------
+P1 ***         ****    *      
+P2                       **** 
+P3       ****      **** *     
+P4    ***    **               
+
+CPU TIME: 26
+AVERAGE TURNAROUND TIME: 18.75
+AVERAGE WAITING TIME: 12.25
+file name : data1.txt

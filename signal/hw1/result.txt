@@ -1,0 +1,6 @@
+'Task2' start (timeout 1)
+'Task1' start (timeout 1)
+'Task2' end
+terminated by SIGNAL(2)
+'Task1' terminated by SIGNAL(2)
+'Task1' end
